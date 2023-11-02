@@ -2,7 +2,6 @@ package com.account_balancer.models
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUID
 
 data class AccountEntity(
     val id: AccountId,
@@ -13,12 +12,12 @@ data class AccountEntity(
 ) {
     companion object {
         fun of(
-            name: String,
-            balance: BigDecimal,
+            accountId: AccountId,
+            balance: BigDecimal? = null,
         ) =
             AccountEntity(
-                id = UUID.randomUUID(),
-                balance = balance,
+                id = accountId,
+                balance = balance ?: BigDecimal.ZERO,
                 currencyCode = "EUR",
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now(),

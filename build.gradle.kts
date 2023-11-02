@@ -8,9 +8,7 @@ plugins {
     id("com.revolut.jooq-docker") version "0.3.9"
 }
 
-group = "com.upday.assignment"
-version = "1.0-SNAPSHOT"
-
+group = "com.account_balancer"
 
 repositories {
     mavenCentral()
@@ -18,7 +16,6 @@ repositories {
 
 dependencies {
 //    spring
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
@@ -56,10 +53,18 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.3")
-//    testImplementation("com.ninja-squad:springmockk:4.0.2")
+
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.19.0"))
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:junit-jupiter")
 }
 
 tasks {
+    generateJooqClasses {
+        basePackageName = "com.account_balancer.db"
+        outputSchemaToDefault = setOf("public")
+    }
+
     withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "17"
@@ -71,11 +76,6 @@ tasks {
     }
     withType<Test> {
         useJUnitPlatform()
-    }
-
-    generateJooqClasses {
-        basePackageName = "com.account_balancer.db"
-        outputSchemaToDefault = setOf("public")
     }
 
     clean {
