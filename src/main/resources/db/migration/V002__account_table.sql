@@ -16,4 +16,4 @@ create trigger set_timestamp_insert
     before insert
     on account
     for each row
-execute procedure trigger_set_timestamps_for_updated_entry();
+execute procedure trigger_set_timestamps_for_new_entry();
