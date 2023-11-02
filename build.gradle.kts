@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("jvm") version "1.9.0"
     kotlin("plugin.spring") version "1.9.0"
+    id("com.revolut.jooq-docker") version "0.3.9"
 }
 
 group = "com.upday.assignment"
@@ -20,6 +21,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+//    db
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    implementation("org.flywaydb:flyway-core")
+    jdbc("org.postgresql:postgresql")
+    runtimeOnly("org.postgresql:postgresql")
 
 //    serialization
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -64,5 +71,14 @@ tasks {
     }
     withType<Test> {
         useJUnitPlatform()
+    }
+
+    generateJooqClasses {
+        basePackageName = "com.account_balancer.db"
+        outputSchemaToDefault = setOf("public")
+    }
+
+    clean {
+        dependsOn("cleanGenerateJooqClasses")
     }
 }

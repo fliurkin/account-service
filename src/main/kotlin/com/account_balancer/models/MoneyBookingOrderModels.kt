@@ -9,7 +9,7 @@ data class MoneyBookingOrderEntity(
     val tenantId: AccountId,
 //    val status: MoneyBookingStatus,
     val amount: BigDecimal,
-    val currencyCode: String, //only EUR supported
+    val currencyCode: String,
     val amountSign: MoneyBookingAmountSign,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
