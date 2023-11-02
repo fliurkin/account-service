@@ -9,7 +9,7 @@ create table money_booking_order_model(
     updated_at timestamp without time zone not null,
     ledger_updated timestamp without time zone,
     account_balance_updated timestamp without time zone
-)
+);
 
 create trigger set_timestamp_update
     before update
