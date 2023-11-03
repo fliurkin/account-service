@@ -7,14 +7,12 @@ data class MoneyBookingOrderEntity(
     val checkoutId: CheckoutId,
     val customerId: AccountId,
     val tenantId: AccountId,
-//    val status: MoneyBookingStatus,
+    val status: MoneyBookingStatus,
     val amount: BigDecimal,
     val currencyCode: String,
-    val amountSign: MoneyBookingAmountSign,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val ledgerUpdated: LocalDateTime? = null,
-    val accountBalanceUpdated: LocalDateTime? = null,
+    val ledgerUpdatedAt: LocalDateTime? = null
 ) {
     companion object {
         fun of(
@@ -22,33 +20,22 @@ data class MoneyBookingOrderEntity(
             customerId: AccountId,
             tenantId: AccountId,
             amount: BigDecimal,
-            currencyCode: String,
-            amountSign: MoneyBookingAmountSign,
         ) =
             MoneyBookingOrderEntity(
                 checkoutId = checkoutId,
                 customerId = customerId,
                 tenantId = tenantId,
-//                status = MoneyBookingStatus.PENDING,
+                status = MoneyBookingStatus.PENDING,
                 amount = amount,
-                currencyCode = currencyCode,
-                amountSign = amountSign,
+                currencyCode = "EUR",
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now(),
             )
     }
 }
 
-//todo handle asynchronously?
 enum class MoneyBookingStatus {
     PENDING,
-    IN_PROGRESS,
     SUCCESS,
-    FAILED,
     CANCELLED,
-}
-
-enum class MoneyBookingAmountSign {
-    POSITIVE,
-    NEGATIVE,
 }

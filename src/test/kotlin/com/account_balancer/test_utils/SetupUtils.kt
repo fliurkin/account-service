@@ -13,4 +13,9 @@ class SetupUtils(
     fun setupAccount(initialBalance: BigDecimal? = null): AccountEntity {
         return accountsRepository.insert(AccountEntity.of(UUID.randomUUID(), initialBalance))
     }
+
+    companion object JsonConstants {
+        const val jsonUnitAnyNumber = "\${json-unit.any-number}"
+        const val jsonUnitIgnoreElement = "\${json-unit.ignore-element}"
+    }
 }

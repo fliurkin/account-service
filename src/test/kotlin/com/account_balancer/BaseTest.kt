@@ -1,6 +1,6 @@
 package com.account_balancer
 
-import com.account_balancer.config.PostgresqlInitializer
+import com.account_balancer.config.PostgreSqlInitializer
 import com.account_balancer.test_utils.SetupUtils
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.clearAllMocks
@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@ContextConfiguration(initializers = [PostgresqlInitializer::class])
+@ContextConfiguration(initializers = [PostgreSqlInitializer::class])
 abstract class BaseTest {
     @Autowired
     protected lateinit var mockMvc: MockMvc

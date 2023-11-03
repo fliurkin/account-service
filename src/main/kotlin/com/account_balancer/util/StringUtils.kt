@@ -3,8 +3,8 @@ package com.account_balancer.util
 import java.math.BigDecimal
 import java.util.UUID
 
-fun String?.toBigDecimalOrThrow(): BigDecimal? {
-    return this?.let {
+fun String.toBigDecimalOrThrow(): BigDecimal {
+    return this.let {
         try {
             this.toBigDecimal()
         } catch (e: NumberFormatException) {

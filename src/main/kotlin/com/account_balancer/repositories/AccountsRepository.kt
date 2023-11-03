@@ -4,6 +4,7 @@ import com.account_balancer.db.tables.Account.ACCOUNT
 import com.account_balancer.db.tables.records.AccountRecord
 import com.account_balancer.models.AccountEntity
 import com.account_balancer.models.AccountId
+import com.account_balancer.models.LedgerAccountBalance
 import com.account_balancer.util.NotFoundException
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
@@ -18,6 +19,18 @@ class AccountsRepository(
             .returning()
             .fetchOne()!!
             .toEntity()
+    }
+
+    fun updateAllAccountBalances(accountBalances: List<LedgerAccountBalance>) {
+        if (accountBalances.isEmpty()) return
+        jooq.batched {
+            accountBalances.forEach { balance ->
+                it.dsl().update(ACCOUNT)
+                    .set(ACCOUNT.BALANCE, ACCOUNT.BALANCE.plus(balance.balance))
+                    .where(ACCOUNT.ID.eq(balance.accountId))
+                    .execute()
+            }
+        }
     }
 
     fun findById(accountId: AccountId): AccountEntity? {
