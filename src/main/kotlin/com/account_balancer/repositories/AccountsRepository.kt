@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class AccountsRepository(
-    private val jooq: DSLContext,
+    protected val jooq: DSLContext,
 ) {
     fun insert(accountEntity: AccountEntity): AccountEntity {
         return jooq.insertInto(ACCOUNT)
@@ -21,14 +21,16 @@ class AccountsRepository(
             .toEntity()
     }
 
-    fun updateAllAccountBalances(accountBalances: List<LedgerAccountBalance>) {
-        if (accountBalances.isEmpty()) return
-        jooq.batched {
-            accountBalances.forEach { balance ->
+    fun updateAllAccountBalances(accountBalances: List<LedgerAccountBalance>): List<AccountEntity> {
+        if (accountBalances.isEmpty()) return listOf()
+        return jooq.batchedResult {
+            accountBalances.map { balance ->
                 it.dsl().update(ACCOUNT)
-                    .set(ACCOUNT.BALANCE, ACCOUNT.BALANCE.plus(balance.balance))
+                    .set(ACCOUNT.BALANCE, balance.balance)
                     .where(ACCOUNT.ID.eq(balance.accountId))
-                    .execute()
+                    .returning()
+                    .fetchOne()!!
+                    .toEntity()
             }
         }
     }

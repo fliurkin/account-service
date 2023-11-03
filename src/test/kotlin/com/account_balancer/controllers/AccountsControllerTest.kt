@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import java.math.BigDecimal
 import java.util.UUID
 import net.javacrumbs.jsonunit.assertj.assertThatJson
 import net.javacrumbs.jsonunit.core.Option
@@ -25,7 +26,6 @@ class AccountsControllerTest : BaseTest() {
 //        given
         val createAccountRequest = CreateAccountRequest(
             accountId = UUID.randomUUID().toString(),
-            balance = "100.00",
         )
 
 //        when
@@ -42,16 +42,13 @@ class AccountsControllerTest : BaseTest() {
 
         val account = accountsRepository.findById(createAccountResponse.accountId)
         account shouldNotBe null
-        account?.balance?.toString() shouldBe createAccountRequest.balance
+        account?.balance shouldBe BigDecimal("0.00")
     }
 
     @Test
     fun `POST accounts should respond with 400 error code and specific message when accountId format is invalid`() {
 //        given
-        val createAccountRequest = CreateAccountRequest(
-            accountId = "bla bla",
-            balance = "100.00",
-        )
+        val createAccountRequest = CreateAccountRequest(accountId = "bla bla")
 
 //        when
         val responseString = mockMvc.post("/accounts") {
@@ -68,31 +65,6 @@ class AccountsControllerTest : BaseTest() {
             .inPath("message")
             .isString
             .isEqualTo("Invalid UUID format: bla bla")
-    }
-
-    @Test
-    fun `POST accounts should respond with 400 error code and specific message when balance format is invalid`() {
-//        given
-        val createAccountRequest = CreateAccountRequest(
-            accountId = UUID.randomUUID().toString(),
-            balance = "bla bla",
-        )
-
-//        when
-        val responseString = mockMvc.post("/accounts") {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.valueToTree<ObjectNode>(createAccountRequest)
-        }
-//        then
-            .andExpect { status { isBadRequest() } }
-            .andReturn()
-            .response.contentAsString
-
-        assertThatJson(responseString)
-            .`when`(Option.IGNORING_ARRAY_ORDER)
-            .inPath("message")
-            .isString
-            .isEqualTo("Invalid balance format: bla bla")
     }
 
     @Test

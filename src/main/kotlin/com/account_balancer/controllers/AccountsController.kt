@@ -3,7 +3,6 @@ package com.account_balancer.controllers
 import com.account_balancer.models.AccountEntity
 import com.account_balancer.models.AccountId
 import com.account_balancer.services.AccountService
-import com.account_balancer.util.toBigDecimalOrThrow
 import com.account_balancer.util.toUuidOrThrow
 import java.util.UUID
 import org.springframework.http.ResponseEntity
@@ -21,10 +20,7 @@ class AccountsController(
 ) {
     @PostMapping
     fun createAccount(@RequestBody request: CreateAccountRequest): ResponseEntity<CreateAccountResponse> {
-        val createdEntity = accountsService.createAccountWithBalance(
-            request.accountId.toUuidOrThrow(),
-            request.balance?.toBigDecimalOrThrow()
-        )
+        val createdEntity = accountsService.createAccountWithBalance(request.accountId.toUuidOrThrow())
         return ResponseEntity.ok(CreateAccountResponse.from(createdEntity))
     }
 
@@ -37,7 +33,6 @@ class AccountsController(
 
 data class CreateAccountRequest(
     val accountId: String,
-    val balance: String? = null,
 )
 
 data class CreateAccountResponse(

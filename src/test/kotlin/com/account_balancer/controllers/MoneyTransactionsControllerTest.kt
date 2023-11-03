@@ -79,11 +79,73 @@ class MoneyTransactionsControllerTest : BaseTest() {
             LedgerAccountBalance(setupAccount.id, BigDecimal("-100.00")),
             LedgerAccountBalance(setupAccount2.id, BigDecimal("100.00"))
         )
-        val ledgerEntryEntity = ledgerEntriesRepository.findBy(givenCheckoutId, setupAccount.id, setupAccount2.id)
+        val ledgerEntryEntity =
+            ledgerEntriesRepository.findBy(givenCheckoutId, setupAccount.id, setupAccount2.id, BigDecimal("100.00"))
         ledgerEntryEntity shouldNotBe null
 
         val moneyBookingOrderEntity = moneyBookingOrdersRepository.requireById(givenCheckoutId)
         moneyBookingOrderEntity.status shouldBe MoneyBookingStatus.SUCCESS
         moneyBookingOrderEntity.ledgerUpdatedAt shouldBe ledgerEntryEntity!!.createdAt
+    }
+
+    @Test
+    fun `POST money-transaction_{checkoutId}_cancel should CANCEL money booking order, and run reversed money transaction`() {
+        // given
+        val setupAccount = setupUtils.setupAccount()
+        val setupAccount2 = setupUtils.setupAccount()
+        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) = setupUtils.setupMoneyBooking(
+            checkoutId = UUID.randomUUID(),
+            customerId = setupAccount.id,
+            tenantId = setupAccount2.id,
+            amount = BigDecimal("500.00")
+        )
+
+        // when
+        val responseString = mockMvc.post("/money-transaction/${moneyBookingOrderEntity.checkoutId}/cancel") {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            // then
+            .andExpect { status { isOk() } }
+            .andReturn()
+            .response.contentAsString
+
+        assertThatJson(responseString).isEqualTo(
+            """
+            {
+                "checkoutId": "${moneyBookingOrderEntity.checkoutId}",
+                "customerId": "${moneyBookingOrderEntity.customerId}",
+                "tenantId": "${moneyBookingOrderEntity.tenantId}",
+                "status": "CANCELLED",
+                "amount": "500.00",
+                "currencyCode": "EUR",
+                "createdAt": "$jsonUnitIgnoreElement",
+                "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+            }
+            """.trimIndent()
+        )
+
+        accountsRepository.requiredById(setupAccount.id).balance shouldBe BigDecimal("0.00")
+        accountsRepository.requiredById(setupAccount2.id).balance shouldBe BigDecimal("0.00")
+
+        ledgerEntriesRepository.getAccountBalances(
+            setupAccount.id,
+            setupAccount2.id
+        ) shouldContainExactlyInAnyOrder listOf(
+            LedgerAccountBalance(setupAccount.id, BigDecimal("0.00")),
+            LedgerAccountBalance(setupAccount2.id, BigDecimal("0.00"))
+        )
+        val newLedgerEntryEntity = ledgerEntriesRepository.findBy(
+            moneyBookingOrderEntity.checkoutId,
+            setupAccount.id,
+            setupAccount2.id,
+            BigDecimal("-500.00")
+        )
+        newLedgerEntryEntity shouldNotBe null
+        newLedgerEntryEntity!!.createdAt shouldBe newLedgerEntryEntity.createdAt
+
+        val updatedMoneyBookingOrderEntity =
+            moneyBookingOrdersRepository.requireById(moneyBookingOrderEntity.checkoutId)
+        updatedMoneyBookingOrderEntity.status shouldBe MoneyBookingStatus.CANCELLED
+        updatedMoneyBookingOrderEntity.ledgerUpdatedAt shouldBe newLedgerEntryEntity.createdAt
     }
 }

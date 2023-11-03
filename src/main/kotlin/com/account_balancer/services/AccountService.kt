@@ -4,7 +4,6 @@ import com.account_balancer.models.AccountEntity
 import com.account_balancer.models.AccountId
 import com.account_balancer.models.LedgerAccountBalance
 import com.account_balancer.repositories.AccountsRepository
-import java.math.BigDecimal
 import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Isolation
@@ -14,10 +13,8 @@ import org.springframework.transaction.annotation.Transactional
 class AccountService(
     private val accountsRepository: AccountsRepository,
 ) {
-    fun createAccountWithBalance(accountId: UUID, initialBalance: BigDecimal?): AccountEntity {
-        return accountsRepository.insert(
-            AccountEntity.of(accountId, initialBalance)
-        )
+    fun createAccountWithBalance(accountId: UUID): AccountEntity {
+        return accountsRepository.insert(AccountEntity.of(accountId, null))
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

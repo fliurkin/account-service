@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class MoneyBookingOrdersRepository(
-    private val jooq: DSLContext,
+    protected val jooq: DSLContext,
 ) {
     fun insert(moneyBookingOrderEntity: MoneyBookingOrderEntity): MoneyBookingOrderEntity {
         return jooq.insertInto(MONEY_BOOKING_ORDER)

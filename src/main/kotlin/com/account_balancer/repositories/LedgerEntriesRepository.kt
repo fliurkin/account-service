@@ -18,7 +18,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class LedgerEntriesRepository(
-    private val jooq: DSLContext,
+    protected val jooq: DSLContext,
 ) {
     fun insert(ledgerEntryEntity: LedgerEntryEntity): LedgerEntryEntity {
         return jooq.insertInto(LEDGER_ENTRY)
@@ -28,11 +28,12 @@ class LedgerEntriesRepository(
             .toEntity()
     }
 
-    fun findBy(checkoutId: CheckoutId, credit: AccountId, debit: AccountId): LedgerEntryEntity? {
+    fun findBy(checkoutId: CheckoutId, credit: AccountId, debit: AccountId, amount: BigDecimal): LedgerEntryEntity? {
         return jooq.selectFrom(LEDGER_ENTRY)
             .where(LEDGER_ENTRY.CHECKOUT_ID.eq(checkoutId))
             .and(LEDGER_ENTRY.CREDIT.eq(credit))
             .and(LEDGER_ENTRY.DEBIT.eq(debit))
+            .and(LEDGER_ENTRY.AMOUNT.eq(amount))
             .fetchOne()
             ?.toEntity()
     }
@@ -48,7 +49,7 @@ class LedgerEntriesRepository(
         val coalesceSum = DSL.coalesce(DSL.sum(ledgerEntryAmount), BigDecimal.ZERO)
         return jooq.with(accountLedgersCte)
             .select(ACCOUNT.ID, coalesceSum.`as`("balance")).from(ACCOUNT)
-            .leftJoin(accountLedgersCte).on(ACCOUNT.ID.eq(ledgerEntryAccountId))
+            .innerJoin(accountLedgersCte).on(ACCOUNT.ID.eq(ledgerEntryAccountId))
             .groupBy(ACCOUNT.ID)
             .fetch()
             .map { (accountId, balance) ->
