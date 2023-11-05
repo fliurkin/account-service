@@ -60,6 +60,7 @@ class MoneyBookingOrdersService(
             moneyBookingOrderQuery.status,
             moneyBookingOrderQuery.createAfter,
             moneyBookingOrderQuery.createBefore,
+            moneyBookingOrderQuery.pagination
         )
     }
 }
@@ -70,4 +71,10 @@ data class MoneyBookingOrderQuery(
     val status: MoneyBookingStatus? = null,
     val createAfter: LocalDateTime? = null,
     val createBefore: LocalDateTime? = null,
+    val pagination: Pagination,
+)
+
+data class Pagination(
+    val offset: Int,
+    val limit: Int,
 )

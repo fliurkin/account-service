@@ -7,6 +7,7 @@ import com.account_balancer.models.CheckoutId
 import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import com.account_balancer.models.MoneyBookingStatus
+import com.account_balancer.services.Pagination
 import com.account_balancer.util.NotFoundException
 import java.time.LocalDateTime
 import org.jooq.DSLContext
@@ -50,12 +51,15 @@ class MoneyBookingOrdersRepository(
             .toEntity()
     }
 
+
+    //    TODO implement pagination using seek method in order to use index scanning in case of performance issues https://vladmihalcea.com/sql-seek-keyset-pagination/
     fun findBy(
         customerId: AccountId?,
         tenantId: AccountId?,
         status: MoneyBookingStatus?,
         createAfter: LocalDateTime?,
         createBefore: LocalDateTime?,
+        pagination: Pagination?,
     ): List<MoneyBookingOrderEntity> {
         return jooq.selectFrom(MONEY_BOOKING_ORDER)
             .where(
@@ -66,6 +70,11 @@ class MoneyBookingOrdersRepository(
                 createBefore?.let { MONEY_BOOKING_ORDER.CREATED_AT.lt(it) },
             )
             .orderBy(MONEY_BOOKING_ORDER.CREATED_AT.desc())
+            .apply {
+                if (pagination != null) {
+                    this.limit(pagination.limit).offset(pagination.offset)
+                }
+            }
             .fetch()
             .map { it.toEntity() }
     }

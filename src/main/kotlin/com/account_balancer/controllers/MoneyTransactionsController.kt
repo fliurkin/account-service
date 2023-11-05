@@ -8,6 +8,7 @@ import com.account_balancer.models.MoneyBookingStatus
 import com.account_balancer.services.MoneyBookingOrderQuery
 import com.account_balancer.services.MoneyBookingOrdersService
 import com.account_balancer.services.MoneyTransactionsService
+import com.account_balancer.services.Pagination
 import com.account_balancer.util.toBigDecimalOrThrow
 import com.account_balancer.util.toUuidOrThrow
 import java.time.LocalDateTime
@@ -51,6 +52,7 @@ class MoneyTransactionsController(
         @RequestParam("status", required = false) status: MoneyBookingStatus?,
         @RequestParam("createdAfter", required = false) createdAfter: LocalDateTime?,
         @RequestParam("createdBefore", required = false) createdBefore: LocalDateTime?,
+        pagination: Pagination
     ): ResponseEntity<MoneyBookingTransactions> {
         val moneyBookingOrderEntities = moneyBookingOrdersService.getMoneyBookingOrders(
             MoneyBookingOrderQuery(
@@ -59,6 +61,7 @@ class MoneyTransactionsController(
                 status = status,
                 createAfter = createdAfter,
                 createBefore = createdBefore,
+                pagination = pagination
             )
         )
             .map { MoneyBookingTransactionModel.from(it) }

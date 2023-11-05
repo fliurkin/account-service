@@ -41,7 +41,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val givenCheckoutId = UUID.randomUUID()
 
         // when
-        val responseString = mockMvc.post("/money-transaction") {
+        val responseString = mockMvc.post("/money-transactions") {
             contentType = MediaType.APPLICATION_JSON
             content = """
                 {
@@ -104,7 +104,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         )
 
         // when
-        val responseString = mockMvc.post("/money-transaction/${moneyBookingOrderEntity.id}/cancel") {
+        val responseString = mockMvc.post("/money-transactions/${moneyBookingOrderEntity.id}/cancel") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -166,7 +166,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
             setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
-        val responseString = mockMvc.get("/money-transactions?customerId=${setupAccount.id}") {
+        val responseString = mockMvc.get("/money-transactions?customerId=${setupAccount.id}&limit=100&offset=0") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -220,7 +220,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
             setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
-        val responseString = mockMvc.get("/money-transactions?tenantId=${setupAccount2.id}") {
+        val responseString = mockMvc.get("/money-transactions?tenantId=${setupAccount2.id}&limit=100&offset=0") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -281,13 +281,14 @@ class MoneyTransactionsControllerTest : BaseTest() {
             setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
-        val responseString = mockMvc.get("/money-transactions?createdAfter=$after&createdBefore=$before") {
-            contentType = MediaType.APPLICATION_JSON
-        }
-            // then
-            .andExpect { status { isOk() } }
-            .andReturn()
-            .response.contentAsString
+        val responseString =
+            mockMvc.get("/money-transactions?createdAfter=$after&createdBefore=$before&limit=100&offset=0") {
+                contentType = MediaType.APPLICATION_JSON
+            }
+                // then
+                .andExpect { status { isOk() } }
+                .andReturn()
+                .response.contentAsString
 
         assertThatJson(responseString).isEqualTo(
             """
