@@ -32,7 +32,7 @@ class LedgerService(
         val ledgerEntryEntity = ledgerEntriesRepository.insert(
             LedgerEntryEntity.of(
                 amount = amount,
-                checkoutId = moneyBookingOrderEntity.checkoutId,
+                moneyBookingOrderId = moneyBookingOrderEntity.id,
                 credit = moneyBookingOrderEntity.customerId,
                 debit = moneyBookingOrderEntity.tenantId,
             )

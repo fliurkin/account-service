@@ -3,6 +3,7 @@ package com.account_balancer.services
 import com.account_balancer.models.AccountId
 import com.account_balancer.models.CheckoutId
 import com.account_balancer.models.LedgerEntryEntity
+import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import com.account_balancer.models.MoneyBookingStatus
 import com.account_balancer.repositories.MoneyBookingOrdersRepository
@@ -24,8 +25,8 @@ class MoneyBookingOrdersService(
         )
     }
 
-    fun getMoneyBookingOrder(checkoutId: CheckoutId): MoneyBookingOrderEntity {
-        return moneyBookingOrdersRepository.requireById(checkoutId)
+    fun getMoneyBookingOrder(moneyBookingId: MoneyBookingId): MoneyBookingOrderEntity {
+        return moneyBookingOrdersRepository.requireById(moneyBookingId)
     }
 
 

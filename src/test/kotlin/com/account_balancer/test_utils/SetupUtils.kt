@@ -34,7 +34,7 @@ class SetupUtils(
         val ledgerEntryEntity = ledgersEntriesRepository.insert(
             LedgerEntryEntity.of(
                 amount = amount,
-                checkoutId = checkoutId,
+                moneyBookingOrderId = moneyBookingOrderEntity.id,
                 credit = customerId,
                 debit = tenantId,
             )

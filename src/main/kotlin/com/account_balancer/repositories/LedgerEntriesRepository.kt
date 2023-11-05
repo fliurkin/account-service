@@ -4,9 +4,9 @@ import com.account_balancer.db.Tables.ACCOUNT
 import com.account_balancer.db.Tables.LEDGER_ENTRY
 import com.account_balancer.db.tables.records.LedgerEntryRecord
 import com.account_balancer.models.AccountId
-import com.account_balancer.models.CheckoutId
 import com.account_balancer.models.LedgerAccountBalance
 import com.account_balancer.models.LedgerEntryEntity
+import com.account_balancer.models.MoneyBookingId
 import java.math.BigDecimal
 import java.util.UUID
 import org.jooq.DSLContext
@@ -28,9 +28,14 @@ class LedgerEntriesRepository(
             .toEntity()
     }
 
-    fun findBy(checkoutId: CheckoutId, credit: AccountId, debit: AccountId, amount: BigDecimal): LedgerEntryEntity? {
+    fun findBy(
+        moneyBookingId: MoneyBookingId,
+        credit: AccountId,
+        debit: AccountId,
+        amount: BigDecimal
+    ): LedgerEntryEntity? {
         return jooq.selectFrom(LEDGER_ENTRY)
-            .where(LEDGER_ENTRY.CHECKOUT_ID.eq(checkoutId))
+            .where(LEDGER_ENTRY.MONEY_BOOKING_ORDER_ID.eq(moneyBookingId))
             .and(LEDGER_ENTRY.CREDIT.eq(credit))
             .and(LEDGER_ENTRY.DEBIT.eq(debit))
             .and(LEDGER_ENTRY.AMOUNT.eq(amount))
@@ -89,7 +94,7 @@ class LedgerEntriesRepository(
         return LedgerEntryRecord(
             this.id,
             this.amount,
-            this.checkoutId,
+            this.moneyBookingOrderId,
             this.credit,
             this.debit,
             null,
@@ -101,7 +106,7 @@ class LedgerEntriesRepository(
         return LedgerEntryEntity(
             id = this.id,
             amount = this.amount,
-            checkoutId = this.checkoutId,
+            moneyBookingOrderId = this.moneyBookingOrderId,
             credit = this.credit,
             debit = this.debit,
             createdAt = this.createdAt,

@@ -7,18 +7,23 @@ import java.util.UUID
 data class LedgerEntryEntity(
     val id: LedgerId,
     val amount: BigDecimal,
-    val checkoutId: CheckoutId,
+    val moneyBookingOrderId: MoneyBookingId,
     val credit: AccountId,
     val debit: AccountId,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
 ) {
     companion object {
-        fun of(amount: BigDecimal, checkoutId: CheckoutId, credit: AccountId, debit: AccountId): LedgerEntryEntity {
+        fun of(
+            amount: BigDecimal,
+            moneyBookingOrderId: MoneyBookingId,
+            credit: AccountId,
+            debit: AccountId
+        ): LedgerEntryEntity {
             return LedgerEntryEntity(
                 id = UUID.randomUUID(),
                 amount = amount,
-                checkoutId = checkoutId,
+                moneyBookingOrderId = moneyBookingOrderId,
                 credit = credit,
                 debit = debit,
                 createdAt = LocalDateTime.now(),

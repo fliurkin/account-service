@@ -1,5 +1,6 @@
 create table money_booking_order(
-    checkout_id uuid default gen_random_uuid() primary key,
+    id uuid default gen_random_uuid() primary key,
+    checkout_id uuid not null,
     customer_id uuid references account (id) on delete restrict not null,
     tenant_id uuid references account (id) on delete restrict not null,
     status text not null default 'PENDING',

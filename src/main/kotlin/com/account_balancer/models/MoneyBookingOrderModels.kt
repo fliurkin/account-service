@@ -2,8 +2,10 @@ package com.account_balancer.models
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class MoneyBookingOrderEntity(
+    val id: MoneyBookingId,
     val checkoutId: CheckoutId,
     val customerId: AccountId,
     val tenantId: AccountId,
@@ -22,6 +24,7 @@ data class MoneyBookingOrderEntity(
             amount: BigDecimal,
         ) =
             MoneyBookingOrderEntity(
+                id = UUID.randomUUID(),
                 checkoutId = checkoutId,
                 customerId = customerId,
                 tenantId = tenantId,

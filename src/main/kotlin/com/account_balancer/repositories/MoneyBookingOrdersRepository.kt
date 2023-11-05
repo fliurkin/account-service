@@ -3,6 +3,7 @@ package com.account_balancer.repositories
 import com.account_balancer.db.Tables.MONEY_BOOKING_ORDER
 import com.account_balancer.db.tables.records.MoneyBookingOrderRecord
 import com.account_balancer.models.CheckoutId
+import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import com.account_balancer.models.MoneyBookingStatus
 import com.account_balancer.util.NotFoundException
@@ -22,15 +23,16 @@ class MoneyBookingOrdersRepository(
             .toEntity()
     }
 
-    private fun findById(checkoutId: CheckoutId): MoneyBookingOrderEntity? {
+    private fun findById(moneyBookingId: MoneyBookingId): MoneyBookingOrderEntity? {
         return jooq.selectFrom(MONEY_BOOKING_ORDER)
-            .where(MONEY_BOOKING_ORDER.CHECKOUT_ID.eq(checkoutId))
+            .where(MONEY_BOOKING_ORDER.ID.eq(moneyBookingId))
             .fetchOne()
             ?.toEntity()
     }
 
-    fun requireById(checkoutId: CheckoutId): MoneyBookingOrderEntity {
-        return findById(checkoutId) ?: throw NotFoundException("Money booking order with id $checkoutId not found")
+    fun requireById(moneyBookingId: MoneyBookingId): MoneyBookingOrderEntity {
+        return findById(moneyBookingId)
+            ?: throw NotFoundException("Money booking order with id $moneyBookingId not found")
     }
 
     fun updateStatusAndLedgerUpdatedAt(
@@ -49,6 +51,7 @@ class MoneyBookingOrdersRepository(
 
     private fun MoneyBookingOrderRecord.toEntity(): MoneyBookingOrderEntity {
         return MoneyBookingOrderEntity(
+            id = this.id,
             checkoutId = this.checkoutId,
             customerId = this.customerId,
             tenantId = this.tenantId,
@@ -63,6 +66,7 @@ class MoneyBookingOrdersRepository(
 
     private fun MoneyBookingOrderEntity.toRecord(): MoneyBookingOrderRecord {
         return MoneyBookingOrderRecord(
+            this.id,
             this.checkoutId,
             this.customerId,
             this.tenantId,

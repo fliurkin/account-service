@@ -7,6 +7,7 @@ import com.account_balancer.repositories.AccountsRepository
 import com.account_balancer.repositories.LedgerEntriesRepository
 import com.account_balancer.repositories.MoneyBookingOrdersRepository
 import com.account_balancer.test_utils.SetupUtils.JsonConstants.jsonUnitIgnoreElement
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -54,20 +55,15 @@ class MoneyTransactionsControllerTest : BaseTest() {
             .andReturn()
             .response.contentAsString
 
-        assertThatJson(responseString).isEqualTo(
-            """
-            {
-                "checkoutId": "$givenCheckoutId",
-                "customerId": "${setupAccount.id}",
-                "tenantId": "${setupAccount2.id}",
-                "status": "SUCCESS",
-                "amount": "100.00",
-                "currencyCode": "EUR",
-                "createdAt": "$jsonUnitIgnoreElement",
-                "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
-            }
-        """.trimIndent()
-        )
+        val moneyBookingResponse = objectMapper.readValue<MoneyBookingTransactionResponse>(responseString)
+        moneyBookingResponse.checkoutId shouldBe givenCheckoutId
+        moneyBookingResponse.customerId shouldBe setupAccount.id
+        moneyBookingResponse.tenantId shouldBe setupAccount2.id
+        moneyBookingResponse.status shouldBe MoneyBookingStatus.SUCCESS
+        moneyBookingResponse.amount shouldBe "100.00"
+        moneyBookingResponse.currencyCode shouldBe "EUR"
+        moneyBookingResponse.createdAt shouldNotBe null
+        moneyBookingResponse.ledgerUpdatedAt shouldNotBe null
 
         accountsRepository.requiredById(setupAccount.id).balance shouldBe BigDecimal("-100.00")
         accountsRepository.requiredById(setupAccount2.id).balance shouldBe BigDecimal("100.00")
@@ -80,10 +76,15 @@ class MoneyTransactionsControllerTest : BaseTest() {
             LedgerAccountBalance(setupAccount2.id, BigDecimal("100.00"))
         )
         val ledgerEntryEntity =
-            ledgerEntriesRepository.findBy(givenCheckoutId, setupAccount.id, setupAccount2.id, BigDecimal("100.00"))
+            ledgerEntriesRepository.findBy(
+                moneyBookingResponse.moneyBookingOrderId,
+                setupAccount.id,
+                setupAccount2.id,
+                BigDecimal("100.00")
+            )
         ledgerEntryEntity shouldNotBe null
 
-        val moneyBookingOrderEntity = moneyBookingOrdersRepository.requireById(givenCheckoutId)
+        val moneyBookingOrderEntity = moneyBookingOrdersRepository.requireById(moneyBookingResponse.moneyBookingOrderId)
         moneyBookingOrderEntity.status shouldBe MoneyBookingStatus.SUCCESS
         moneyBookingOrderEntity.ledgerUpdatedAt shouldBe ledgerEntryEntity!!.createdAt
     }
@@ -101,7 +102,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         )
 
         // when
-        val responseString = mockMvc.post("/money-transaction/${moneyBookingOrderEntity.checkoutId}/cancel") {
+        val responseString = mockMvc.post("/money-transaction/${moneyBookingOrderEntity.id}/cancel") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -112,6 +113,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         assertThatJson(responseString).isEqualTo(
             """
             {
+                "moneyBookingOrderId": "${moneyBookingOrderEntity.id}",
                 "checkoutId": "${moneyBookingOrderEntity.checkoutId}",
                 "customerId": "${moneyBookingOrderEntity.customerId}",
                 "tenantId": "${moneyBookingOrderEntity.tenantId}",
@@ -135,7 +137,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
             LedgerAccountBalance(setupAccount2.id, BigDecimal("0.00"))
         )
         val newLedgerEntryEntity = ledgerEntriesRepository.findBy(
-            moneyBookingOrderEntity.checkoutId,
+            moneyBookingOrderEntity.id,
             setupAccount.id,
             setupAccount2.id,
             BigDecimal("-500.00")
@@ -143,8 +145,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         newLedgerEntryEntity shouldNotBe null
         newLedgerEntryEntity!!.createdAt shouldBe newLedgerEntryEntity.createdAt
 
-        val updatedMoneyBookingOrderEntity =
-            moneyBookingOrdersRepository.requireById(moneyBookingOrderEntity.checkoutId)
+        val updatedMoneyBookingOrderEntity = moneyBookingOrdersRepository.requireById(moneyBookingOrderEntity.id)
         updatedMoneyBookingOrderEntity.status shouldBe MoneyBookingStatus.CANCELLED
         updatedMoneyBookingOrderEntity.ledgerUpdatedAt shouldBe newLedgerEntryEntity.createdAt
     }

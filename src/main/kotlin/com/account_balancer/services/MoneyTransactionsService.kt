@@ -2,6 +2,7 @@ package com.account_balancer.services
 
 import com.account_balancer.models.AccountId
 import com.account_balancer.models.CheckoutId
+import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import java.math.BigDecimal
 import org.springframework.stereotype.Service
@@ -29,8 +30,8 @@ class MoneyTransactionsService(
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ) // REPEATABLE_READ to avoid race condition
-    fun cancelMoneyBooking(checkoutId: CheckoutId): MoneyBookingOrderEntity {
-        val moneyBookingOrder = moneyBookingOrdersService.getMoneyBookingOrder(checkoutId)
+    fun cancelMoneyBooking(moneyBookingId: MoneyBookingId): MoneyBookingOrderEntity {
+        val moneyBookingOrder = moneyBookingOrdersService.getMoneyBookingOrder(moneyBookingId)
 
         // TODO implement it asynchronously so that latency is not affected by using queue with redriving mechanism
         val ledgerEntry = ledgerService.updateBalancesAndLedgerWithReversedEntry(moneyBookingOrder)

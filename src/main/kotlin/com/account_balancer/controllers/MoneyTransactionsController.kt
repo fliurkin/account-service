@@ -2,6 +2,7 @@ package com.account_balancer.controllers
 
 import com.account_balancer.models.AccountId
 import com.account_balancer.models.CheckoutId
+import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import com.account_balancer.models.MoneyBookingStatus
 import com.account_balancer.services.MoneyTransactionsService
@@ -33,11 +34,9 @@ class MoneyTransactionsController(
         return ResponseEntity.ok(MoneyBookingTransactionResponse.from(moneyBookingOrderEntity))
     }
 
-    @PostMapping("/{checkoutId}/cancel")
-    fun cancelMoneyBookingOrder(@PathVariable("checkoutId") checkoutId: CheckoutId): ResponseEntity<MoneyBookingTransactionResponse> {
-        val moneyBookingOrderEntity = moneyTransactionsService.cancelMoneyBooking(
-            checkoutId = checkoutId,
-        )
+    @PostMapping("/{moneyBookingId}/cancel")
+    fun cancelMoneyBookingOrder(@PathVariable("moneyBookingId") moneyBookingId: MoneyBookingId): ResponseEntity<MoneyBookingTransactionResponse> {
+        val moneyBookingOrderEntity = moneyTransactionsService.cancelMoneyBooking(moneyBookingId)
         return ResponseEntity.ok(MoneyBookingTransactionResponse.from(moneyBookingOrderEntity))
     }
 }
@@ -50,6 +49,7 @@ data class CreateMoneyBookingTransactionRequest(
 )
 
 data class MoneyBookingTransactionResponse(
+    val moneyBookingOrderId: MoneyBookingId,
     val checkoutId: CheckoutId,
     val customerId: AccountId,
     val tenantId: AccountId,
@@ -61,6 +61,7 @@ data class MoneyBookingTransactionResponse(
 ) {
     companion object {
         fun from(moneyBookingOrderEntity: MoneyBookingOrderEntity) = MoneyBookingTransactionResponse(
+            moneyBookingOrderId = moneyBookingOrderEntity.id,
             checkoutId = moneyBookingOrderEntity.checkoutId,
             customerId = moneyBookingOrderEntity.customerId,
             tenantId = moneyBookingOrderEntity.tenantId,

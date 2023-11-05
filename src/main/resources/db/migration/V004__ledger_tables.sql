@@ -1,7 +1,7 @@
 create table ledger_entry(
     id uuid default gen_random_uuid() primary key,
     amount numeric(20,2) not null,
-    checkout_id uuid references money_booking_order (checkout_id) on delete restrict not null,
+    money_booking_order_id uuid references money_booking_order (id) on delete restrict not null,
     credit uuid references account (id) on delete restrict not null,
     debit uuid references account (id) on delete restrict not null,
     created_at timestamp without time zone not null,
