@@ -16,9 +16,20 @@ Replace `localhost` with your host if you are running application on remote serv
 
 ### Run project locally
 
-- prepare local db `docker-compose up -d` where `up` brings up the containers and `-d` runs them in the background.<br>
-  You can check that containers are up and running with `docker ps` command.<br>
-  In order to stop containers run `docker-compose down`
+All commands should be executed from project root directory unless otherwise specified.
+- run local db by using :
+ ```
+docker-compose up -d account_service_postgreql
+```
+  where `up` brings up the containers and `-d` runs them in the background.<br>
+  You can check that containers are up and running with command: 
+  ```
+  docker ps
+  ```
+  In order to stop containers run: 
+  ```
+  docker-compose down
+  ```
 - build application
 
 ```
@@ -30,3 +41,13 @@ Replace `localhost` with your host if you are running application on remote serv
 ```
  ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
+- you can also run application as docker container as well:
+```
+docker-compose up -d
+```
+this command deploy locally both application and database containers. <br>
+- also you can build a new docker image and run it locally:
+```
+docker build -t accounts_service .
+```
+other information about building, pushing and deploying docker images can be found here https://docs.docker.com/get-started/02_our_app/

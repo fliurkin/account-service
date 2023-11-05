@@ -2,13 +2,29 @@ version: '3'
 services:
   account_service_postgreql:
     image: "postgres:15-alpine"
+    container_name: postgres
+    networks:
+      accounts_service:
     ports:
       - "5433:5432"
-    networks:
-      - postgresql
     environment:
-      - POSTGRES_PASSWORD=zeal
-      - POSTGRES_USER=zeal
-      - POSTGRES_DB=zeal_db
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+      POSTGRES_DB: accounts_service_db
+  accounts_services:
+    image: "flyurkarimov/accounts_service"
+    container_name: backend
+    networks:
+      accounts_service:
+    ports:
+      - "8080:8080"
+    depends_on:
+      - account_service_postgreql
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:postgresql://account_service_postgreql:5432/accounts_service_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
 networks:
-    postgresql:
+  accounts_service:
+    driver: bridge
