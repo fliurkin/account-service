@@ -1,0 +1,14 @@
+version: '3'
+services:
+  account_service_postgreql:
+    image: "postgres:15-alpine"
+    ports:
+      - "5433:5432"
+    networks:
+      - postgresql
+    environment:
+      - POSTGRES_PASSWORD=zeal
+      - POSTGRES_USER=zeal
+      - POSTGRES_DB=zeal_db
+networks:
+    postgresql:
