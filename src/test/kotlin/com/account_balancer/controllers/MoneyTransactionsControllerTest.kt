@@ -12,11 +12,13 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.UUID
 import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
 
@@ -32,7 +34,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
     private lateinit var ledgerEntriesRepository: LedgerEntriesRepository
 
     @Test
-    fun `POST money-transaction should successfully create money booking order, update ledger and balances`() {
+    fun `POST money-transactions should successfully create money booking order, update ledger and balances`() {
         // given
         val setupAccount = setupUtils.setupAccount()
         val setupAccount2 = setupUtils.setupAccount()
@@ -55,7 +57,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
             .andReturn()
             .response.contentAsString
 
-        val moneyBookingResponse = objectMapper.readValue<MoneyBookingTransactionResponse>(responseString)
+        val moneyBookingResponse = objectMapper.readValue<MoneyBookingTransactionModel>(responseString)
         moneyBookingResponse.checkoutId shouldBe givenCheckoutId
         moneyBookingResponse.customerId shouldBe setupAccount.id
         moneyBookingResponse.tenantId shouldBe setupAccount2.id
@@ -90,7 +92,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
     }
 
     @Test
-    fun `POST money-transaction_{checkoutId}_cancel should CANCEL money booking order, and run reversed money transaction`() {
+    fun `POST money-transactions_{checkoutId}_cancel should CANCEL money booking order, and run reversed money transaction`() {
         // given
         val setupAccount = setupUtils.setupAccount()
         val setupAccount2 = setupUtils.setupAccount()
@@ -148,5 +150,174 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val updatedMoneyBookingOrderEntity = moneyBookingOrdersRepository.requireById(moneyBookingOrderEntity.id)
         updatedMoneyBookingOrderEntity.status shouldBe MoneyBookingStatus.CANCELLED
         updatedMoneyBookingOrderEntity.ledgerUpdatedAt shouldBe newLedgerEntryEntity.createdAt
+    }
+
+    @Test
+    fun `GET money-transactions should return all money booking orders by customer id`() {
+        // given
+        val setupAccount = setupUtils.setupAccount()
+        val setupAccount2 = setupUtils.setupAccount()
+        val setupAccount3 = setupUtils.setupAccount()
+        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity3, ledgerEntryEntity3, accountEntities3) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+
+        // when
+        val responseString = mockMvc.get("/money-transactions?customerId=${setupAccount.id}") {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            // then
+            .andExpect { status { isOk() } }
+            .andReturn()
+            .response.contentAsString
+
+        assertThatJson(responseString).isEqualTo(
+            """
+            {
+                "transactions": [
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity2.id}",
+                        "checkoutId": "${moneyBookingOrderEntity2.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity2.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity2.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    },
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity.id}",
+                        "checkoutId": "${moneyBookingOrderEntity.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    }
+                ]   
+            }
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `GET money-transactions should return all money booking orders by tenant id`() {
+        // given
+        val setupAccount = setupUtils.setupAccount()
+        val setupAccount2 = setupUtils.setupAccount()
+        val setupAccount3 = setupUtils.setupAccount()
+        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity3, ledgerEntryEntity3, accountEntities3) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+
+        // when
+        val responseString = mockMvc.get("/money-transactions?tenantId=${setupAccount2.id}") {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            // then
+            .andExpect { status { isOk() } }
+            .andReturn()
+            .response.contentAsString
+
+        assertThatJson(responseString).isEqualTo(
+            """
+            {
+                "transactions": [
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity2.id}",
+                        "checkoutId": "${moneyBookingOrderEntity2.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity2.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity2.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    },
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity.id}",
+                        "checkoutId": "${moneyBookingOrderEntity.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    }
+                ]   
+            }
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `GET money-transactions should return all money booking orders by createdAfter and createdBefore properties`() {
+        // given
+        val setupAccount = setupUtils.setupAccount()
+        val setupAccount2 = setupUtils.setupAccount()
+
+        val setupAccount3 = setupUtils.setupAccount()
+        val (moneyBookingOrderEntityFilteredOut, ledgerEntryEntityFilteredOut, accountEntitiesFilteredOut) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+
+        val after = LocalDateTime.now()
+        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val before = LocalDateTime.now()
+
+        val (moneyBookingOrderEntityFilteredOut2, ledgerEntryEntityFilteredOut2, accountEntitiesFilteredOut2) =
+            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+
+        // when
+        val responseString = mockMvc.get("/money-transactions?createdAfter=$after&createdBefore=$before") {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            // then
+            .andExpect { status { isOk() } }
+            .andReturn()
+            .response.contentAsString
+
+        assertThatJson(responseString).isEqualTo(
+            """
+            {
+                "transactions": [
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity2.id}",
+                        "checkoutId": "${moneyBookingOrderEntity2.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity2.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity2.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    },
+                    {
+                        "moneyBookingOrderId": "${moneyBookingOrderEntity.id}",
+                        "checkoutId": "${moneyBookingOrderEntity.checkoutId}",
+                        "customerId": "${moneyBookingOrderEntity.customerId}",
+                        "tenantId": "${moneyBookingOrderEntity.tenantId}",
+                        "status": "SUCCESS",
+                        "amount": "500.00",
+                        "currencyCode": "EUR",
+                        "createdAt": "$jsonUnitIgnoreElement",
+                        "ledgerUpdatedAt": "$jsonUnitIgnoreElement"
+                    }
+                ]   
+            }
+            """.trimIndent()
+        )
     }
 }

@@ -2,6 +2,7 @@ package com.account_balancer.repositories
 
 import com.account_balancer.db.Tables.MONEY_BOOKING_ORDER
 import com.account_balancer.db.tables.records.MoneyBookingOrderRecord
+import com.account_balancer.models.AccountId
 import com.account_balancer.models.CheckoutId
 import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
@@ -47,6 +48,26 @@ class MoneyBookingOrdersRepository(
             .returning()
             .fetchOne()!!
             .toEntity()
+    }
+
+    fun findBy(
+        customerId: AccountId?,
+        tenantId: AccountId?,
+        status: MoneyBookingStatus?,
+        createAfter: LocalDateTime?,
+        createBefore: LocalDateTime?,
+    ): List<MoneyBookingOrderEntity> {
+        return jooq.selectFrom(MONEY_BOOKING_ORDER)
+            .where(
+                customerId?.let { MONEY_BOOKING_ORDER.CUSTOMER_ID.eq(it) },
+                tenantId?.let { MONEY_BOOKING_ORDER.TENANT_ID.eq(it) },
+                status?.let { MONEY_BOOKING_ORDER.STATUS.eq(it.name) },
+                createAfter?.let { MONEY_BOOKING_ORDER.CREATED_AT.gt(it) },
+                createBefore?.let { MONEY_BOOKING_ORDER.CREATED_AT.lt(it) },
+            )
+            .orderBy(MONEY_BOOKING_ORDER.CREATED_AT.desc())
+            .fetch()
+            .map { it.toEntity() }
     }
 
     private fun MoneyBookingOrderRecord.toEntity(): MoneyBookingOrderEntity {

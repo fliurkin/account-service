@@ -5,39 +5,64 @@ import com.account_balancer.models.CheckoutId
 import com.account_balancer.models.MoneyBookingId
 import com.account_balancer.models.MoneyBookingOrderEntity
 import com.account_balancer.models.MoneyBookingStatus
+import com.account_balancer.services.MoneyBookingOrderQuery
+import com.account_balancer.services.MoneyBookingOrdersService
 import com.account_balancer.services.MoneyTransactionsService
 import com.account_balancer.util.toBigDecimalOrThrow
 import com.account_balancer.util.toUuidOrThrow
 import java.time.LocalDateTime
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/money-transaction")
-//todo Provide a means for a customer-care service to fetch recent transactions per customer and tenant
+@RequestMapping("/money-transactions")
 //todo create audit log
 class MoneyTransactionsController(
-    private val moneyTransactionsService: MoneyTransactionsService
+    private val moneyTransactionsService: MoneyTransactionsService,
+    private val moneyBookingOrdersService: MoneyBookingOrdersService,
 ) {
     @PostMapping
-    fun createMoneyBookingOrder(@RequestBody request: CreateMoneyBookingTransactionRequest): ResponseEntity<MoneyBookingTransactionResponse> {
+    fun createMoneyBookingOrder(@RequestBody request: CreateMoneyBookingTransactionRequest): ResponseEntity<MoneyBookingTransactionModel> {
         val moneyBookingOrderEntity = moneyTransactionsService.bookMoney(
             checkoutId = request.checkoutId.toUuidOrThrow(),
             customerId = request.customerId.toUuidOrThrow(),
             tenantId = request.tenantId.toUuidOrThrow(),
             amount = request.amount.toBigDecimalOrThrow(),
         )
-        return ResponseEntity.ok(MoneyBookingTransactionResponse.from(moneyBookingOrderEntity))
+        return ResponseEntity.ok(MoneyBookingTransactionModel.from(moneyBookingOrderEntity))
     }
 
     @PostMapping("/{moneyBookingId}/cancel")
-    fun cancelMoneyBookingOrder(@PathVariable("moneyBookingId") moneyBookingId: MoneyBookingId): ResponseEntity<MoneyBookingTransactionResponse> {
+    fun cancelMoneyBookingOrder(@PathVariable("moneyBookingId") moneyBookingId: MoneyBookingId): ResponseEntity<MoneyBookingTransactionModel> {
         val moneyBookingOrderEntity = moneyTransactionsService.cancelMoneyBooking(moneyBookingId)
-        return ResponseEntity.ok(MoneyBookingTransactionResponse.from(moneyBookingOrderEntity))
+        return ResponseEntity.ok(MoneyBookingTransactionModel.from(moneyBookingOrderEntity))
+    }
+
+    @GetMapping
+    fun getMoneyBookingOrders(
+        @RequestParam("customerId", required = false) customerId: AccountId?,
+        @RequestParam("tenantId", required = false) tenantId: AccountId?,
+        @RequestParam("status", required = false) status: MoneyBookingStatus?,
+        @RequestParam("createdAfter", required = false) createdAfter: LocalDateTime?,
+        @RequestParam("createdBefore", required = false) createdBefore: LocalDateTime?,
+    ): ResponseEntity<MoneyBookingTransactions> {
+        val moneyBookingOrderEntities = moneyBookingOrdersService.getMoneyBookingOrders(
+            MoneyBookingOrderQuery(
+                customerId = customerId,
+                tenantId = tenantId,
+                status = status,
+                createAfter = createdAfter,
+                createBefore = createdBefore,
+            )
+        )
+            .map { MoneyBookingTransactionModel.from(it) }
+        return ResponseEntity.ok(MoneyBookingTransactions(moneyBookingOrderEntities))
     }
 }
 
@@ -48,7 +73,11 @@ data class CreateMoneyBookingTransactionRequest(
     val amount: String,
 )
 
-data class MoneyBookingTransactionResponse(
+data class MoneyBookingTransactions(
+    val transactions: List<MoneyBookingTransactionModel>
+)
+
+data class MoneyBookingTransactionModel(
     val moneyBookingOrderId: MoneyBookingId,
     val checkoutId: CheckoutId,
     val customerId: AccountId,
@@ -60,7 +89,7 @@ data class MoneyBookingTransactionResponse(
     val ledgerUpdatedAt: LocalDateTime,
 ) {
     companion object {
-        fun from(moneyBookingOrderEntity: MoneyBookingOrderEntity) = MoneyBookingTransactionResponse(
+        fun from(moneyBookingOrderEntity: MoneyBookingOrderEntity) = MoneyBookingTransactionModel(
             moneyBookingOrderId = moneyBookingOrderEntity.id,
             checkoutId = moneyBookingOrderEntity.checkoutId,
             customerId = moneyBookingOrderEntity.customerId,
