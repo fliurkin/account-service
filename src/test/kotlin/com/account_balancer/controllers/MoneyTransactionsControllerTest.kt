@@ -96,7 +96,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         // given
         val setupAccount = setupUtils.setupAccount()
         val setupAccount2 = setupUtils.setupAccount()
-        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) = setupUtils.setupMoneyBooking(
+        val (moneyBookingOrderEntity, _, _) = setupUtils.setupMoneyBooking(
             checkoutId = UUID.randomUUID(),
             customerId = setupAccount.id,
             tenantId = setupAccount2.id,
@@ -158,12 +158,9 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val setupAccount = setupUtils.setupAccount()
         val setupAccount2 = setupUtils.setupAccount()
         val setupAccount3 = setupUtils.setupAccount()
-        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
-        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
-        val (moneyBookingOrderEntity3, ledgerEntryEntity3, accountEntities3) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
         val responseString = mockMvc.get("/money-transactions?customerId=${setupAccount.id}&limit=100&offset=0") {
@@ -212,12 +209,9 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val setupAccount = setupUtils.setupAccount()
         val setupAccount2 = setupUtils.setupAccount()
         val setupAccount3 = setupUtils.setupAccount()
-        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
-        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
-        val (moneyBookingOrderEntity3, ledgerEntryEntity3, accountEntities3) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
         val responseString = mockMvc.get("/money-transactions?tenantId=${setupAccount2.id}&limit=100&offset=0") {
