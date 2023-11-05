@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/money-transactions")
-//todo create audit log
 class MoneyTransactionsController(
     private val moneyTransactionsService: MoneyTransactionsService,
     private val moneyBookingOrdersService: MoneyBookingOrdersService,
