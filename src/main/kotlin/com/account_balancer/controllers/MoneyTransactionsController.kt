@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/money-transaction")
+//todo Provide a means for a customer-care service to fetch recent transactions per customer and tenant
+//todo create audit log
 class MoneyTransactionsController(
     private val moneyTransactionsService: MoneyTransactionsService
 ) {

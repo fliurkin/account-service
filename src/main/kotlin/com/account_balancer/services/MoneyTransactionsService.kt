@@ -13,8 +13,7 @@ class MoneyTransactionsService(
     private val moneyBookingOrdersService: MoneyBookingOrdersService,
     private val ledgerService: LedgerService
 ) {
-    // relying on PostgreSQL's lost update detection
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ) // REPEATABLE_READ to avoid race condition
     fun bookMoney(
         checkoutId: CheckoutId,
         customerId: AccountId,
@@ -29,8 +28,7 @@ class MoneyTransactionsService(
         return moneyBookingOrdersService.completeMoneyBookingOrder(moneyBookingOrderEntity, ledgerEntry)
     }
 
-    // relying on PostgreSQL's lost update detection
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ) // REPEATABLE_READ to avoid race condition
     fun cancelMoneyBooking(checkoutId: CheckoutId): MoneyBookingOrderEntity {
         val moneyBookingOrder = moneyBookingOrdersService.getMoneyBookingOrder(checkoutId)
 

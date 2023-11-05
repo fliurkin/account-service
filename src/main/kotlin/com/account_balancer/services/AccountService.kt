@@ -17,7 +17,7 @@ class AccountService(
         return accountsRepository.insert(AccountEntity.of(accountId, null))
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ) // REPEATABLE_READ to avoid read skew anomaly during concurrent updates
     fun getAccountEntity(accountId: AccountId): AccountEntity {
         return accountsRepository.requiredById(accountId)
     }
