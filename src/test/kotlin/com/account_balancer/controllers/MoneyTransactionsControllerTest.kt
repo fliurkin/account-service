@@ -267,18 +267,14 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val setupAccount2 = setupUtils.setupAccount()
 
         val setupAccount3 = setupUtils.setupAccount()
-        val (moneyBookingOrderEntityFilteredOut, ledgerEntryEntityFilteredOut, accountEntitiesFilteredOut) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+        val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         val after = LocalDateTime.now()
-        val (moneyBookingOrderEntity, ledgerEntryEntity, accountEntities) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
-        val (moneyBookingOrderEntity2, ledgerEntryEntity2, accountEntities2) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
+        val (moneyBookingOrderEntity2, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount.id, setupAccount2.id, BigDecimal("500.00"))
         val before = LocalDateTime.now()
 
-        val (moneyBookingOrderEntityFilteredOut2, ledgerEntryEntityFilteredOut2, accountEntitiesFilteredOut2) =
-            setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
+        val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
         val responseString =
