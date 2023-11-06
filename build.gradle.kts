@@ -28,9 +28,6 @@ dependencies {
 //    serialization
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-//    jwt
-    implementation("io.jsonwebtoken:jjwt:0.12.3")
-
 //  logging
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
 
@@ -47,7 +44,6 @@ dependencies {
 
 //    test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.kotest:kotest-assertions-core-jvm:5.7.2")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("org.assertj:assertj-core:3.24.2")
