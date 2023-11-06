@@ -41,7 +41,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val givenCheckoutId = UUID.randomUUID()
 
         // when
-        val responseString = mockMvc.post("/money-transactions") {
+        val responseString = mockMvc.post("/v1/money-transactions") {
             contentType = MediaType.APPLICATION_JSON
             content = """
                 {
@@ -104,7 +104,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         )
 
         // when
-        val responseString = mockMvc.post("/money-transactions/${moneyBookingOrderEntity.id}/cancel") {
+        val responseString = mockMvc.post("/v1/money-transactions/${moneyBookingOrderEntity.id}/cancel") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -163,7 +163,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
-        val responseString = mockMvc.get("/money-transactions?customerId=${setupAccount.id}&limit=100&offset=0") {
+        val responseString = mockMvc.get("/v1/money-transactions?customerId=${setupAccount.id}&limit=100&offset=0") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -214,7 +214,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
         val (_, _, _) = setupUtils.setupMoneyBooking(UUID.randomUUID(), setupAccount3.id, setupAccount.id, BigDecimal("500.00"))
 
         // when
-        val responseString = mockMvc.get("/money-transactions?tenantId=${setupAccount2.id}&limit=100&offset=0") {
+        val responseString = mockMvc.get("/v1/money-transactions?tenantId=${setupAccount2.id}&limit=100&offset=0") {
             contentType = MediaType.APPLICATION_JSON
         }
             // then
@@ -272,7 +272,7 @@ class MoneyTransactionsControllerTest : BaseTest() {
 
         // when
         val responseString =
-            mockMvc.get("/money-transactions?createdAfter=$after&createdBefore=$before&limit=100&offset=0") {
+            mockMvc.get("/v1/money-transactions?createdAfter=$after&createdBefore=$before&limit=100&offset=0") {
                 contentType = MediaType.APPLICATION_JSON
             }
                 // then

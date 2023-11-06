@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/money-transactions")
+@RequestMapping("/v1/money-transactions")
 class MoneyTransactionsController(
     private val moneyTransactionsService: MoneyTransactionsService,
     private val moneyBookingOrdersService: MoneyBookingOrdersService,

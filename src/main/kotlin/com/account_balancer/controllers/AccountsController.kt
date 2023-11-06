@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/v1/accounts")
 class AccountsController(
     private val accountsService: AccountService
 ) {

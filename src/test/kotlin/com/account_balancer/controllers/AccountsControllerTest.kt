@@ -29,7 +29,7 @@ class AccountsControllerTest : BaseTest() {
         )
 
 //        when
-        val responseString = mockMvc.post("/accounts") {
+        val responseString = mockMvc.post("/v1/accounts") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.valueToTree<ObjectNode>(createAccountRequest)
         }
@@ -51,7 +51,7 @@ class AccountsControllerTest : BaseTest() {
         val createAccountRequest = CreateAccountRequest(accountId = "bla bla")
 
 //        when
-        val responseString = mockMvc.post("/accounts") {
+        val responseString = mockMvc.post("/v1/accounts") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.valueToTree<ObjectNode>(createAccountRequest)
         }
@@ -73,7 +73,7 @@ class AccountsControllerTest : BaseTest() {
         val setupAccount = setupUtils.setupAccount()
 
 //        when
-        val responseString = mockMvc.get("/accounts/${setupAccount.id}/balance")
+        val responseString = mockMvc.get("/v1/accounts/${setupAccount.id}/balance")
 //        then
             .andExpect { status { isOk() } }
             .andReturn()
