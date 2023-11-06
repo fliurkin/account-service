@@ -72,3 +72,8 @@ If that's the case we might need to use some kind of explicit locking mechanism 
 - there is an audit mechanism to catch all updates to tables. Consider implementing alerting mechanism, since those tables are not supposed to be updated manually.
 - It might be a good idea in function audit_tables() capture what exactly changed: what value was deleted, what was the value before the update, what is the value after the update
 - Auditing mechanism using triggers might be not reliable, it might be a good idea to implement event sourcing pattern to capture all events.
+- There is no authentication and authorization mechanism implemented 
+since the microservices is supposed to be deployed in a private network without direct access to the internet.
+- Current implementation recomputes balances of two participants of the transaction everytime, it might be an overkill since incremental updates is a simpler solution. 
+Due to lack of time I did not write test to check if system can handle concurrent transactions without producing anomalies.  
+I decided that in this case it might be better solution to provide a way to recompute balances in case of any inconsistencies (See com.account_balancer.services.LedgerService.createLedgerEntriesAndUpdateBalances) 
